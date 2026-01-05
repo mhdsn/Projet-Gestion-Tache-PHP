@@ -1,5 +1,4 @@
 <?php
-// On inclut le cerveau de la page (qui gère la sécurité, la session et les requêtes)
 require 'traitement.php';
 ?>
 
@@ -124,4 +123,5 @@ require 'traitement.php';
     </div>
 
 </body>
+
 </html>
