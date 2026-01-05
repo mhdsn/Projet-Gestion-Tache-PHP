@@ -2,7 +2,6 @@
 session_start();
 require 'db.php';
 
-// --- 1. SÉCURITÉ ---
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: index.php");
     exit();
@@ -10,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $message = "";
 
-// Variables par défaut pour le formulaire (Mode AJOUT)
 $mode_edition = false;
 $form_action = 'ajouter';
 $id_edit = '';
@@ -19,10 +17,8 @@ $role_val = 'user';
 $btn_text = 'Créer le compte';
 $btn_class = 'btn-success';
 
-// --- 2. TRAITEMENT DU FORMULAIRE (POST) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
-    // CAS A : AJOUTER
     if ($_POST['action'] === 'ajouter') {
         if (!empty($_POST['username']) && !empty($_POST['password'])) {
             try {
@@ -35,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
 
-    // CAS B : MODIFIER
     if ($_POST['action'] === 'modifier') {
         $id = $_POST['id'];
         $user = $_POST['username'];
@@ -43,19 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $pass = $_POST['password'];
 
         try {
-            // Si le mot de passe est rempli, on met tout à jour
             if (!empty($pass)) {
                 $stmt = $pdo->prepare("UPDATE users SET username = ?, role = ?, password = ? WHERE id = ?");
                 $stmt->execute([$user, $role, sha1($pass), $id]);
             } 
-            // Sinon, on met à jour SAUF le mot de passe
             else {
                 $stmt = $pdo->prepare("UPDATE users SET username = ?, role = ? WHERE id = ?");
                 $stmt->execute([$user, $role, $id]);
             }
             $message = '<div class="alert alert-warning">Utilisateur modifié avec succès !</div>';
             
-            // On redirige pour nettoyer le formulaire (sortir du mode édition)
             header("Location: admin_users.php");
             exit();
 
@@ -65,9 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// --- 3. TRAITEMENT DE L'URL (GET) ---
-
-// CAS : SUPPRIMER
 if (isset($_GET['supprimer'])) {
     if ($_GET['supprimer'] != $_SESSION['user_id']) {
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
@@ -76,8 +65,6 @@ if (isset($_GET['supprimer'])) {
     header("Location: admin_users.php");
     exit();
 }
-
-// CAS : PRÉPARER L'ÉDITION (Quand on clique sur "Modifier")
 if (isset($_GET['edit'])) {
     $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_GET['edit']]);
@@ -94,7 +81,6 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// --- 4. RÉCUPÉRATION DE LA LISTE ---
 $stmt = $pdo->query("SELECT * FROM users ORDER BY id DESC");
 $users = $stmt->fetchAll();
 ?>
@@ -214,4 +200,5 @@ $users = $stmt->fetchAll();
 </div>
 
 </body>
+
 </html>
